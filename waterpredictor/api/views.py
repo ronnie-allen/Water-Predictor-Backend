@@ -55,6 +55,9 @@ def interpret(score):
 # ------------------ API View ------------------ #
 
 class WaterPredictAPIView(APIView):
+    def get(self, request):
+        return Response({"detail": "GET not allowed on this endpoint."}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
     def post(self, request):
         serializer = WaterInputSerializer(data=request.data)
         
@@ -63,11 +66,7 @@ class WaterPredictAPIView(APIView):
             input_df = pd.DataFrame([data])
 
             try:
-                # Reorder and scale input if necessary
                 input_df = input_df[feature_columns]
-                # Uncomment if your model needs scaling
-                # input_df = scaler.transform(input_df)
-
                 prediction = loaded_model.predict(input_df)[0]
                 message = interpret(prediction)
 
@@ -79,4 +78,4 @@ class WaterPredictAPIView(APIView):
             except Exception as e:
                 return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Invalid input', 'details': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
